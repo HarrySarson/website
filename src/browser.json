@@ -1,0 +1,11 @@
+{
+    "style": {
+        "main": "./styles/main.scss",
+        "output": "bundle.css"  
+    },
+    "images": "./images/**/*.*",
+    "page": "./index.html",
+    "browserify": {
+        "transform": ["babelify"]
+    }
+}

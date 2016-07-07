@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>  
+    <title>Pong</title>
+    <link rel="shortcut icon" href="images/icon.png">
+<link rel="stylesheet" type="text/css" href="styles/bundle.css"/>
+</head>
+
+<body>
+    <div class="canvas-holder">
+        <canvas id="map" height="400px" width="1294px">
+        </canvas>
+        <div class="menu game-font">
+            <table id="pause" class="large">
+                <tr>
+                    <td></td>
+                    <td class="select" id="resume">CLICK TO CONTINUE</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td class="select" id = "restart">CLICK FOR NEW GAME</td>
+                    <td></td>
+                </tr>
+            </table>
+            <table id="winner" class="large">
+                <tr>
+                    <td colspan=3>
+                    Congratulations
+                    <span id="winName"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan=3>
+                        You Have Won
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td class="select" id="restartWin">CLICK FOR NEW GAME</td>
+                    <td></td>
+                </tr>
+            </table>
+            <table id="newgame">
+                <tr>
+                    <td><a>Left</a></td>
+                    <td class="select" id="begin" class="select">CLICK TO START GAME</td>
+                    <td><a>Right</a></td>
+                </tr>
+                <tr>
+                    <td id="cpu1" class="select"></td>
+                    <td id="widest">-Select CPU/Player-</td>
+                    <td id="cpu2" class="select"></td>
+                </tr>
+                <tr>
+                <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td colspan="3">Controls</td>
+                </tr>
+                <tr>
+                    <td>W</td>
+                    <td>-Move paddle Up-</td>
+                    <td>Up arrow</td>
+                </tr>
+                <tr>
+                    <td>S</td>
+                    <td>-Move paddle Down-</td>
+                    <td>Down arrow</td>
+                </tr>
+                <tr>
+                    <td>P</td>
+                    <td>-Pause-</td>
+                    <td>P</td>
+                </tr>
+            </table>
+        </div>
+        <div id="characterTest" class="game-font">
+        m
+        </div>
+    </div>
+    
+<script src="/lib/common.js"></script>
+<script src="scripts/bundle.js"></script>
+</body>
+</html>

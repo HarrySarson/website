@@ -1,0 +1,43 @@
+{
+  "name": "HarryWebsite",
+  "version": "0.1.1",
+  "description": "package.json file for mechansim, a webapp to model 2D mechanisms",
+  
+  "devDependencies": {
+    "babelify": "7.3.x",
+    "browser-sync": "2.13.x",
+    "babel-plugin-transform-runtime": "6.9.x",   
+    "browserify": "13.0.x",
+    "glob": "7.0.x",
+    "glob2base": "0.0.x",
+    "globby": "5.0.x",
+    "gulp": "3.9.x",
+    "gulp-autoprefixer": "3.1.x",
+    "gulp-clean-css": "2.0.x",
+    "gulp-eslint": "3.0.x",
+    "gulp-imagemin": "3.0.x",
+    "gulp-inject-string": "1.1.x",
+    "gulp-notify": "2.2.x",
+    "gulp-rename": "1.2.x",
+    "gulp-sass": "2.3.x",
+    "gulp-sourcemaps": "1.6.x",
+    "gulp-uglify": "1.5.x",
+    "gulp-watch": "4.3.x",
+    "merge-stream": "1.0.x",
+    "resolve": "1.1.x",
+    "through2": "2.0.x",
+    "vinyl-buffer": "1.0.x",
+    "vinyl-source-stream": "1.1.x",
+    "watchify": "3.7.x"
+  },
+  
+  "dependencies": {
+    "animation-timer2": "0.1.x",
+    "jquery": "3.0.x",
+    "jquery-mousewheel": "3.1.x",
+    "lodash": "4.13.x",
+    "mathjs": "3.1.x",
+    "modernizr": "3.3.x",
+    "util": "0.10.x"
+  }
+}

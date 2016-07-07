@@ -1,0 +1,26 @@
+{
+    "src": "./src/",
+    
+    "site": "pong/",
+    "dest": "./build/",
+    
+    "browser": "browser.json",
+    
+    "watch": true,
+    
+    "libary": {
+        "script": {
+            "require": [
+                "jquery",
+                "jquery-mousewheel",
+                "lodash",
+                "mathjs"
+            ],
+            "output": "lib/common.js"
+        },
+        "browserify": {
+            "transform": ["babelify"]
+        }
+    }
+}
+
