@@ -1,7 +1,7 @@
 {
     "src": "./src/",
     
-    "site": "pong/",
+    "site": "convolution/",
     "dest": "./build/",
     
     "browser": "browser.json",
@@ -14,7 +14,8 @@
                 "jquery",
                 "jquery-mousewheel",
                 "lodash",
-                "mathjs"
+                "mathjs",
+                "tinycolor2"
             ],
             "output": "lib/common.js"
         },

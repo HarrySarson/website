@@ -70,7 +70,7 @@ module.exports = function(gulp, name, config, sites, sync) {
                             let browserifyConfig = siteConfig.browserify || {};
                             
                             // add watchify to configs
-                            _.assign(browserifyConfig, wtchify.args);
+                            _.assign(browserifyConfig, wtchify.args, { debug: config.watch });
                             
                             
                             let b = brwsify(scriptPath, browserifyConfig);
@@ -87,7 +87,7 @@ module.exports = function(gulp, name, config, sites, sync) {
                             
                             let bundle = function(do_sync) {
                                 gutil.log('Bundling ' + gutil.colors.blue(rel) + '...');
-                                return b.bundle()
+                                let stream = b.bundle()
                                     .on('error', function() {
                                         
                                         gutil.log(gutil.colors.red('Bundling ') + gutil.colors.blue(rel) + gutil.colors.red(' Failure'));  
@@ -109,13 +109,23 @@ module.exports = function(gulp, name, config, sites, sync) {
                                     })
                                     
                                     .pipe(source(scriptPath))
-                                    .pipe(buffer()) // convert stream to form that plugins can work with
+                                    .pipe(buffer()); // convert stream to form that plugins can work with
                                     
-                                    .pipe(smaps.init({loadMaps: true}))
-                                        .pipe(uglify())
+                                if(config.watch)
+                                {
+                                    // babel transform must have sourcemaps: true in the .babelrc config file
+                                    stream
+                                        .pipe(smaps.init({loadMaps: true}))
                                         .pipe(rename(siteConfig.script.output))
-                                    .pipe(smaps.write('./'))
-                                    
+                                        .pipe(smaps.write('./'));
+                                }
+                                else
+                                {
+                                    stream
+                                        .pipe(uglify());
+                                }
+                                
+                                stream
                                     .pipe(
                                         gulp.dest(
                                             path.dirname(
@@ -123,6 +133,7 @@ module.exports = function(gulp, name, config, sites, sync) {
                                                 )
                                             )
                                         );
+                                return stream;
                             }
                             if(config.watch)
                             {

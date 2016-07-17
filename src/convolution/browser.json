@@ -1,0 +1,17 @@
+{
+    "style": {
+        "main": "./styles/main.scss",
+        "output": "bundle.css"  
+    },
+    "script": {
+        "main": "./scripts/main.js",
+        "output": "bundle.js",
+        "lib": "lib/common.js"
+    },
+    "images": "./images/**/*.*",
+    "page": "./index.html",
+    "browserify": {
+        "transform": ["babelify"],
+        "debug": true
+    }
+}
