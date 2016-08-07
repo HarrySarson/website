@@ -524,7 +524,6 @@ animate(function(controller) {
         plot.clear();
         plot.draw();
         
-        _.times(2, i => { throw i });
         
         
         $('.info').children().eq(3).text(brush_size); 
