@@ -1,12 +1,11 @@
 {
     "src": "./src/",
     
-    "site": "convolution/",
+    "site": "",
     "dest": "./build/",
     
     "browser": "browser.json",
     
-    "watch": true,
     
     "libary": {
         "script": {

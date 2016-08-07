@@ -61,27 +61,31 @@ module.exports = function(gulp, name, config, sites, sync) {
                 // create script tag strings to be added
                 // NB libary tags go first
                 
+                if( siteConfig.script )
+                {
+                    addTag('script', 'lib',  '<script src="' + 
+                                              '/' + 
+                                              siteConfig.script.lib + 
+                                              '"></script>');
+                    addTag('script', 'main', '<script src="' + 
+                                             path.posix.join(path.posix.dirname(siteConfig.script.main),
+                                                             siteConfig.script.output) + 
+                                             '"></script>');
+                }
                 
-                addTag('script', 'lib',  '<script src="' + 
-                                          '/' + 
-                                          siteConfig.script.lib + 
-                                          '"></script>');
-                addTag('script', 'main', '<script src="' + 
-                                         path.posix.join(path.posix.dirname(siteConfig.script.main),
-                                                         siteConfig.script.output) + 
-                                         '"></script>');
+                if( siteConfig.style )
+                {
                 
-                
-                addTag('style',  'lib',  '<link rel="stylesheet" type="text/css" href="' + 
-                                         '/' + 
-                                          siteConfig.style.lib + 
-                                         '"/>');
-                addTag('style',  'main', '<link rel="stylesheet" type="text/css" href="' + 
-                                         path.posix.join(path.posix.dirname(siteConfig.style.main),
-                                                         siteConfig.style.output) + 
-                                         '"/>');
-                                         
-                
+                    addTag('style',  'lib',  '<link rel="stylesheet" type="text/css" href="' + 
+                                             '/' + 
+                                              siteConfig.style.lib + 
+                                             '"/>');
+                    addTag('style',  'main', '<link rel="stylesheet" type="text/css" href="' + 
+                                             path.posix.join(path.posix.dirname(siteConfig.style.main),
+                                                             siteConfig.style.output) + 
+                                             '"/>');
+                                             
+                }
                 
                 acc.push(obj);
                 
