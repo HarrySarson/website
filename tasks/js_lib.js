@@ -55,7 +55,9 @@ module.exports = function(gulp, name, config, sites, sync) {
             }       
             
             let browserifyConfig    = config.libary.browserify || {},
-                outputFile          = config.libary
+                outputFile          = config.libary;
+                
+            _.assign(browserifyConfig, { debug: config.watch });
                
             let b = brwsify(browserifyConfig);
             
@@ -67,7 +69,7 @@ module.exports = function(gulp, name, config, sites, sync) {
             gutil.log('Bundling libary ' + gutil.colors.blue(opts.output) + '...');
             
             
-            return b.bundle()
+            let stream = b.bundle()
                 .on('error', notify.onError({
                     title: "Error Bundling Libary",
                     message: "<%= error.message %>"
@@ -77,13 +79,18 @@ module.exports = function(gulp, name, config, sites, sync) {
                 })  
                 
                 .pipe(source(opts.output))
-                .pipe(buffer()) // convert stream to form that plugins can work with
+                .pipe(buffer()); // convert stream to form that plugins can work with
+            
+            if( config.debug )
+                stream
+                    .pipe(smaps.init({loadMaps: true}))
+                        .pipe(uglify())
+                    .pipe(smaps.write())
                 
-                .pipe(smaps.init({loadMaps: true}))
-                    .pipe(uglify())
-                .pipe(smaps.write())
-                
+            stream
                 .pipe(gulp.dest(config.dest));
+                
+            return stream;
         }
     });
 }   

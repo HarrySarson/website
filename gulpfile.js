@@ -63,6 +63,7 @@ throw e;
     
     if(len > 0)
     {
+        gutil.log(gutil.colors.cyan('Site path set to ' + config.site));
         gutil.log(gutil.colors.cyan('Found ' + len + ' valid browser configuration file(s):'));
         _.forOwn(obj, function(conf, p) {
             gutil.log('\t' + gutil.colors.green(path.join(p, config.browser)) );

@@ -42,9 +42,7 @@ exports.arrow = function(ctx, x1, y1, x2, y2, headSize, headAngle) {
     ctx.lineTo(x4, y4);
     ctx.lineTo(x5, y5);
     ctx.lineTo(x2, y2);
-    
-    console.log(k);
-    
+        
     // NB last line finishes at (x2, y2)
     // so if the arrow is part of a path then the next line will start at
     // the tip of the arrow head

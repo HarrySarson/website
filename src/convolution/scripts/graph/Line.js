@@ -1,11 +1,14 @@
 const
  //   color   = require('tinycolor2'),
+    _ = require('lodash'),
 
-    argumentTemplate = require('../argument-template')
+    argumentTemplate = require('../argument-template'),
+    Iterator = require('../Iterator')
     ;
 
  
-let weakGraphRef = new WeakMap();
+let weakGraphRef = new WeakMap(),
+    hasProp      = Object.prototype.hasOwnProperty;
 
 /**
  *  Adds `line` to the weak graph entry for `graph`
@@ -59,37 +62,58 @@ let Line = module.exports = function Line(args) {
     // use weakGraphRef to link the graph to its lines
     // without having to add properties to the Graph object
     
-    if(this._graph)
-        weakGraphAdd(this._graph, this);
+    this._graph.forEach(graph =>
+        weakGraphAdd(graph, this));
+        
+        
+    
     
     this._animation_queue = [];
     this._animation_args = null;
     
-}
+};
+
+
+Line.defaultColorSymbol = Symbol();
 
 
 Line.argumentTemplate = argumentTemplate.template('Line()', {
-    graph: {
-        default: null,
-        description: 'an optional Graph object (see module:./Graph.js), if provided the line will be added to that graph',
+    graph: argumentTemplate.iterable({
+        default: [],
+        description: 'Graph objects (see module:./Graph.js), if provided the line will be added to that graph',
         rename: '_graph'
-    },
+    }),
     color: argumentTemplate.color({
-        optional: true,
+        default: Line.defaultColorSymbol,
         description: 'Color of this line, default colors are defined the graph object'
     }),
     smooth: argumentTemplate.number({
         default: 0.2,
         description: 'Control how much the line is smoothed at corners, set to zero for no smoothing which speed up plotting'
     }),
-    x: argumentTemplate.iterable({
-        description: 'x-coordinates of points to plot',
-        rename: '_x'
-    }),
+    x: argumentTemplate.requireOneOf(
+        argumentTemplate.strictFalse(),    
+        argumentTemplate.iterable({
+            default: false,
+            description: 'x-coordinates of points to plot, if `false` or undefined this defaults ' +
+             'to an array of integers corresponing to the index of the y-coordinate',
+            rename: '_x'
+        })),
     y: argumentTemplate.iterable({
+        default: [],
         description: 'y-coordinates of points to plot',
         rename: '_y'
-    })
+    }),
+    marker: argumentTemplate.requireOneOf(
+        argumentTemplate.strictString(), 
+        argumentTemplate.function(),
+        {
+            default: false,
+            description: 'marker for points plotted, if this value is falsy or an unregonised string no markers will be plotted, if it ' +
+                'is a function that function will be invoked with arguments (context, x, y, recomendedRadius) and should draw the marker ' +
+                'onto the context, use moveTo to move the pen to the start of the shape drawn and don\'t call beginPath or stroke. ' + 
+                'see http://uk.mathworks.com/help/matlab/ref/plot.html#inputarg_LineSpec for valid strings'
+        })
 });
 
 
@@ -99,20 +123,35 @@ Object.defineProperties(Line.prototype, {
         enumerable: true,
         get: function() { return this._graph },
         set: function(val) {
-            if( this.graph )
-                weakGraphRemove(this._graph, this);
-            else if( val )
-                weakGraphAdd(val, this);
+            this._graph.forEach(graph =>
+                weakGraphRemove(graph, this));
+                
+            if( val != null )
+            {
+                if( !_.isArray(val) )
+                    val = [val];
             
-            this._graph = val || null;
+                this._graph = val;
+                
+                this._graph.forEach(graph =>
+                    weakGraphAdd(graph, this));
+            }
         }
     },
     x: {
         configurable: true,
         enumerable: true,
         get: function() { 
+            let self = this;
+            
             if( this._animation_queue.length === 0 )
-                return this._x;
+                return this._x || function*() { 
+                    
+                    for(let i = 0; i < self._y.length; ++i) 
+                    { 
+                        yield i;
+                    }
+                }();
             
             throw new Error('Line: animations not implemented yet');
         },
@@ -131,6 +170,15 @@ Object.defineProperties(Line.prototype, {
         },
         set: function(val) {
             this._y = val;
+        }
+    },
+    coors: {
+        configurable: true,
+        enumerable: true,
+        get: function() { 
+        
+            return Iterator.combine({x: this.x, y: this.y});
+                
         }
     }
 })

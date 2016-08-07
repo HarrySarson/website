@@ -40,6 +40,7 @@ module.exports = function(gulp, name, config, sites, sync) {
             return;
         }
         
+        // NB there is error if this is run without internet connection, needs fixing
         
         let compress = imgPaths.map(imgPath => function() {
             let error = false;

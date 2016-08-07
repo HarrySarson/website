@@ -60,12 +60,12 @@ Graph.argumentTemplate = argumentTemplate.template('Graph()', {
         default: 'black',
         description: 'Color of axis of the graph'
     }),
-    gridColor: argumentTemplate.requireOneOf({
-        requirement: 'Falsy value'
-    }, argumentTemplate.color({
-        default: '#aaa',
-        description: 'Omit this argument or set it as false for no grid, otherwise this defines the color of grid on the graph'
-    }))
+    gridColor: argumentTemplate.requireOneOf(
+        argumentTemplate.strictFalse(),
+        argumentTemplate.color({
+            default: '#aaa',
+            description: 'Omit this argument or set it as false for no grid, otherwise this defines the color of grid on the graph'
+        }))
 });
 
 
@@ -75,7 +75,7 @@ Graph.argumentTemplate = argumentTemplate.template('Graph()', {
  */
 Graph.prototype.add = function add(args) {
         
-    args = argumentTemplate({graph: this}, args, add.argumentTemplate);
+    args = argumentTemplate({graph: [this]}, args, add.argumentTemplate);
     
     return new Line(args);
 }
@@ -99,6 +99,24 @@ Graph.prototype.plot = function plot(args) {
     }, args, plot.argumentTemplate);
         
     return new Plot(args).draw();
+    
+}
+
+Graph.prototype.plot.argumentTemplate = 
+    argumentTemplate.template('Graph#plot()', argumentTemplate.withoutProperties(Plot.argumentTemplate, 
+                                                                     new Set(['graph'])
+                                                                     ));
+/**
+ * Gets the range of the graph stored in the `x` abd `y` properties of the returned object
+ *
+ * @returns {Object} Range of the graph
+ */ 
+Graph.prototype.range = function range() {
+    let thisgraph = this;
+    return {
+        get x() { return thisgraph.xmax - thisgraph.xmin },
+        get y() { return thisgraph.ymax - thisgraph.ymin }
+    };
     
 }
 

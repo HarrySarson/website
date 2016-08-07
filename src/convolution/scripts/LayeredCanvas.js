@@ -32,7 +32,7 @@ let Canvas = function(el, layers){
         throw new Error("Canvas(): el must be a DOM element");
     
     let $el = $(el); // wrap in jquery
-    layers = +layers; // coerse into number
+    layers = +layers; // coerce into number
     
     
     if($el.css('position') === 'static')

@@ -21,8 +21,8 @@ const extraMap = {
     rename: (prop, templ) => {
         prop.key = hasOwn.call(templ, 'rename') ? templ.rename : prop.key;
     },
-    coerse: (prop, templ) => {
-        if( hasOwn.call(templ, 'coerse') )
+    coerce: (prop, templ) => {
+        if( hasOwn.call(templ, 'coerce') )
             prop.val = templ.coerce(prop.val);
     }
     
@@ -35,7 +35,7 @@ function assignArgsWithFuncname(funcname, obj, args, template, extras) {
     else if( !_.isArray(extras) )
         extras = [extras];
     
-    extras.push('coerse');
+    extras.push('coerce');
     
     _.forOwn(template, function(templ, key) {
         
@@ -170,11 +170,11 @@ function checkTemplate(funcname, template) {
 
 
 
-function argumentTemplate(obj, args, template) {
+function argumentTemplate(obj, args, template, extras) {
     
     const funcname = template[funcnameSym];
     
-    return assignArgsWithFuncname(funcname, obj, args, template);
+    return assignArgsWithFuncname(funcname, obj, args, template, extras);
 }
 
 argumentTemplate.assign = argumentTemplate;
@@ -188,14 +188,17 @@ argumentTemplate.template = function template(funcname, template) {
 }
 
 
-argumentTemplate.requireOneOf = (...templates) => (_.assign({
-    requirement: _.reduce(templates.map(_.property('requirement')), 
-                           (acc, req) => acc + ' or ' + req),
-    
-    
-    validate: val => _.some(templates, templ => templ.validate ? templ.validate(val) : true)
+argumentTemplate.requireOneOf = (...templates) => 
+    _.assign({}, ...templates, {
+        requirement: 
+            _(templates)
+                .map(_.property('requirement'))
+                .reduce( (acc, req) => acc + ' or ' + req ),
+        
+        
+        validate: val => _.some(templates, templ => templ.validate ? templ.validate(val) : true)
 
-}, ...templates));
+    });
 
 argumentTemplate.withoutProperties = (sourceTemplate, toRemoveSet) => 
     _.reduce(sourceTemplate, (acc, templ, propertyName) => {
@@ -206,38 +209,66 @@ argumentTemplate.withoutProperties = (sourceTemplate, toRemoveSet) =>
         return acc;
         
     }, {});
+    
+function defaultObject(obj) {
+    
+    return typeof obj === 'undefined' ? {} : obj;
+    
+}
 
-argumentTemplate.strictNumber = templ => _.assign(templ, {
+argumentTemplate.strictNumber = templ => _.assign(defaultObject(templ), {
     requirement: 'Any real number',
     validate: _.isFinite
 });
     
-argumentTemplate.number = templ => _.assign(templ, argumentTemplate.strictNumber(templ), { coerce: Number });
 
+argumentTemplate.number = templ => _.assign(defaultObject(templ), {
+    requirement: 'value to a real number',
+    validate: _.isFinite,
+    coerce: Number
+});
+
+argumentTemplate.strictString = templ => _.assign(defaultObject(templ), {
+    requirement: 'a string',
+    validate: _.isString
+});
 
 argumentTemplate.object = templ => {
     templ[objSym] = true;
     return templ;
 }
 
-argumentTemplate.iterable = templ => _.assign(templ, {
-    requirement: 'An iterable object defines obj[Symbol.iterator]. (see https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Iteration_protocols)',
+argumentTemplate.iterable = templ => _.assign(defaultObject(templ), {
+    requirement: 'an iterable object defines obj[Symbol.iterator]. (see https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Iteration_protocols)',
     validate: isIterable    
 });
 
-argumentTemplate.color = templ => _.assign(templ, {
+argumentTemplate.color = templ => _.assign(defaultObject(templ), {
     requirement: 'string or any object representing a color that can be converted to a string, or an array of these'  
 });
 
-argumentTemplate.function = templ => _.assign(templ, {
+argumentTemplate.function = templ => _.assign(defaultObject(templ), {
     requirement: 'a function',
     validate: _.isFunction
 });
 
-argumentTemplate.strictBoolean = templ => _.assign(templ, {
-    requirement: 'a boolean value, `true` or `false`',
-    validate: _.isBoolean
+argumentTemplate.boolean = templ => _.assign(defaultObject(templ), {
+    requirement: 'value convertable boolean, `true` or `false`',
+    validate: _.isBoolean,
+    coerce: Boolean
 });
    
-argumentTemplate.boolean = templ => _.assign(templ, argumentTemplate.strictBoolean(templ), { coerce: Boolean });
+argumentTemplate.false = templ => _.assign(defaultObject(templ), {
+    requirement: 'value convertable to `false`, i.e. `false`, `null`, `undefined`, `0` or `NaN`',
+    validate: val => !val,
+    coerce: Boolean
+});
+
+argumentTemplate.strictFalse = templ => _.assign(defaultObject(templ), {
+    requirement: '`false`',
+    validate: val => val === false
+});
+
+// ERROR COERCING WHEN THERE ARE MULTIPLE OPTIONS FOR ARGUMENT TYPE
+   
 

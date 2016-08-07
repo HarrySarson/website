@@ -88,14 +88,10 @@ module.exports = function(gulp, name, config, sites, sync) {
                             let bundle = function(do_sync) {
                                 gutil.log('Bundling ' + gutil.colors.blue(rel) + '...');
                                 let stream = b.bundle()
-                                    .on('error', function() {
+                                    .on('error', function(error) {
                                         
                                         gutil.log(gutil.colors.red('Bundling ') + gutil.colors.blue(rel) + gutil.colors.red(' Failure'));  
-                                        // Send error to notification center with gulp-notify
-                                        notify.onError({
-                                            title: "Error Bundling Javascript",
-                                            message: "<%= error.message %>"
-                                        }).apply(this, arguments);
+                                        gutil.log(gutil.colors.red('Error: ') + error.message);
 
 
                                         // Keep gulp from hanging on this task
@@ -113,11 +109,10 @@ module.exports = function(gulp, name, config, sites, sync) {
                                     
                                 if(config.watch)
                                 {
-                                    // babel transform must have sourcemaps: true in the .babelrc config file
                                     stream
-                                        .pipe(smaps.init({loadMaps: true}))
-                                        .pipe(rename(siteConfig.script.output))
-                                        .pipe(smaps.write('./'));
+                                        .pipe(smaps.init({loadMaps: true }))
+                                            .pipe(rename(siteConfig.script.output))
+                                        .pipe(smaps.write()); // for some reason only inline source maps work
                                 }
                                 else
                                 {

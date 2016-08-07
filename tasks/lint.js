@@ -1,6 +1,7 @@
 'use strict';
 const 
     _       = require('lodash'),
+    cached  = require('gulp-cached'),
     eslint  = require('gulp-eslint'),
     gutil   = require('gulp-util'),
     merge   = require('merge-stream'),
@@ -51,16 +52,25 @@ module.exports = function(gulp, name, config, sites, sync) {
             }
         };
         
+        let firstRun = true;
+        
         let lint = jsPaths.map(jsPath => function() {
-                        
+           
+            if( firstRun )     
+                gutil.log('Linting all js files required from ' + gutil.colors.yellow(jsPath) + ' ...');   
+        
             let stream =
                 gulp.src(jsPath, {base: config.src})
+                
                 .on('error', notify.onError(errorFunc))
+                .pipe(cached('linting'))
                 .pipe(through.obj(function(chunk, enc, cb) {
                    
                     let rel = path.join(config.src, path.relative(config.src, chunk.path));
                     
-                    gutil.log('Linting ' + gutil.colors.green(rel) + '...');
+                    // don't print on first run
+                    if( !firstRun )
+                        gutil.log('Linting ' + gutil.colors.yellow(rel) + '...');
 
                     cb(null, chunk);
                 }))
@@ -71,7 +81,8 @@ module.exports = function(gulp, name, config, sites, sync) {
                     
                     let outcome = file.eslint.messages.length === 0 ? 'Success' : 'Failure';
                     
-                    gutil.log('Linting ' + gutil.colors.green(rel) + ' ' + outcome);
+                    if( !firstRun || outcome === 'Failure' )
+                        gutil.log('Linting ' + gutil.colors.yellow(rel) + ' ' + outcome);
             
                     return file.eslint.messages.length === 0 ? false : 
                     {
@@ -85,12 +96,22 @@ module.exports = function(gulp, name, config, sites, sync) {
             return stream;
         });
         
+        
         if(config.watch)
+        {
+            
             jsPaths
                 .forEach((jsPath, i) => watch(jsPath, { ignoreInitial: true }, lint[i]));
-                                 
+        }
+                             
+                                
+        let stream = _.reduce(lint, (merged, l) => merged.add(l()), merge());
         
-        return _.reduce(lint, (merged, l) => merged.add(l()), merge());
+        stream.on('end', function() {
+            firstRun = false;
+        });
+        
+        return stream;
         
     });
 };  

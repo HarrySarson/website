@@ -1,15 +1,67 @@
 const
     $       = require('jquery'),
+    _       = require('lodash'),
     color   = require('tinycolor2'),
 
     argumentTemplate = require('../argument-template'),
+    eachForEach      = require('../util/each-for-each.js'),
+    Iterator         = require('../Iterator'),
     shapes  = require('./canvasShapes'),
-    Line    = require('./Line')    
+    Line    = require('./Line')   
     
     ;
 
 const
-    hasOwn = Object.prototype.hasOwnProperty;
+    hasOwn = Object.prototype.hasOwnProperty,
+    
+    markers = {
+        
+        o: function(context, x, y, recRad) { // Circle
+            context.moveTo(x-recRad, y);
+            context.arc(x, y, recRad, 0, 2*Math.PI);
+        },
+        '+': function(context, x, y, recRad) { // Plus sign
+            context.moveTo(x - recRad, y);
+            context.lineTo(x + recRad, y);
+            
+            context.moveTo(x, y - recRad);
+            context.lineTo(x, y +    recRad);            
+        },
+        '*': function(context, x, y, recRad) { // Asterisk
+        
+        },
+        '.': function(context, x, y, recRad) { // Point
+        
+        },
+        x: function(context, x, y, recRad) { // Cross
+        
+        },
+        s: function(context, x, y, recRad) { // Square
+        
+        },
+        d:      function(context, x, y, recRad) { // Diamond
+        
+        },
+        '^':    function(context, x, y, recRad) { // Upward-pointing triangle
+        
+        },
+        v:      function(context, x, y, recRad) { // Downward-pointing triangle
+        
+        },
+        '>':    function(context, x, y, recRad) { // Right-pointing triangle
+        
+        },
+        '<':    function(context, x, y, recRad) { // Left-pointing triangle
+        
+        },
+        p:      function(context, x, y, recRad) { // Pentagram
+        
+        },
+        h:      function(context, x, y, recRad) { // Hexagram
+        
+        },
+        
+    }
     
 function Smoother(ctx, smooth) {
     this.ctx = ctx;
@@ -102,10 +154,6 @@ Smoother.prototype.end = function end() {
     this.reset();
 }
 
-function clip(lower, upper, x) {
-    return Math.max(lower, Math.min(upper, x));
-}
-
     
 /**
  * Creates an Object that can plot the graph to a canvas and then
@@ -118,11 +166,6 @@ let Plot = module.exports = function Plot(args) {
         
     // http://scaledinnovation.com/analytics/splines/aboutSplines.html
     
-    this._scaleX                  = this.width  / (this.graph.xmax - this.graph.xmin);
-    this._scaleY                  = this.height / (this.graph.ymax - this.graph.ymin);
-    
-    this._yAxisDistanceFromLeft   = this._scaleX * -this.graph.xmin;
-    this._xAxisDistanceFromTop    = this._scaleY * this.graph.ymax;
 }
 
 
@@ -148,7 +191,6 @@ Plot.argumentTemplate = argumentTemplate.template('Plot()', {
 });
 
 
-
 /**
  * Draws graph onto canvas.
  *
@@ -159,52 +201,37 @@ Plot.prototype.draw = function draw() {
     const 
         ctx             = this.context,
         arrowSize       = Math.sqrt(this.width + this.height) / 4,
-        smallestSide    = this.width < this.height ? 'width' : 'height';
+        arrowAngle      = Math.PI/6,
+        smallestSide    = this.width < this.height ? 'width' : 'height',
+        arrowSideLegth  = arrowSize * Math.tan(arrowAngle/2),
+                
+    // slightly smaller drawing box so that the edges of arrows are always visible
+        left            = this.x      +     arrowSideLegth + 1,
+        top             = this.y      +     arrowSideLegth + 1,
+        width           = this.width  - 2 * arrowSideLegth - 2,
+        height          = this.height - 2 * arrowSideLegth - 2,
+        
+        range           = this.graph.range(),
+        
+        scale = { 
+            x: width  / range.x,
+            y: height / range.y
+        },
+    
+    
+        yAxisDistanceFromLeft   = scale.x * -this.graph.xmin,
+        xAxisDistanceFromTop    = scale.y * this.graph.ymax;
+        
     
     
     ctx.save();
     ctx.lineJoin = 'round';
     
+    // clip to bigger box
+    ctx.beginPath();
+    ctx.rect(this.x, this.y, this.width, this.height);
+    ctx.clip();
     
-    // draw axis
-    
-    ctx.strokeStyle = this.graph.axisColor;
-    ctx.fillStyle   = color(this.graph.axisColor).lighten();
-    ctx.lineWidth = arrowSize / 8;
-    
-    // x - axis
-    if( this.graph.ymax > 0 && this.graph.ymin < 0 )
-    {
-        ctx.beginPath();
-        if( arrowSize * 1.2 < this.width - this._yAxisDistanceFromLeft )
-            shapes.arrow(ctx,
-                         this.x,              this.y + this._xAxisDistanceFromTop,
-                         this.x + this.width, this.y + this._xAxisDistanceFromTop,
-                         arrowSize, Math.PI/6);
-        else
-        {
-            ctx.lineTo(this.x,              this.y + this._xAxisDistanceFromTop);
-            ctx.lineTo(this.x + this.width, this.y + this._xAxisDistanceFromTop);         
-        }
-        ctx.stroke();
-        ctx.fill();
-    }
-    // y - axis
-    if( this.graph.xmax > 0 && this.graph.xmin < 0 )
-    {
-        ctx.beginPath();
-        if( arrowSize * 1.2 < this.height - this._xAxisDistanceFromTop )
-            shapes.arrow(ctx,
-                         this.x + this._yAxisDistanceFromLeft, this.y,
-                         this.x + this._yAxisDistanceFromLeft, this.y + this.height,
-                         arrowSize, Math.PI/6);
-        else
-        {
-            ctx.lineTo(this.x + this._yAxisDistanceFromLeft, this.y);
-            ctx.lineTo(this.x + this._yAxisDistanceFromLeft, this.y + this.height);
-        }
-        ctx.stroke();
-    }
     
     // draw grid
     if( this.graph.gridColor )
@@ -219,18 +246,18 @@ Plot.prototype.draw = function draw() {
             
         let
             lineSpace   = this[smallestSide] / (lines),
-            vertlines   = this.width  / lineSpace,
-            hozlines    = this.height / lineSpace,
+            vertlines   = width  / lineSpace,
+            hozlines    = height / lineSpace,
             
             // align grid with axis
             
-            hozbefore   = this._yAxisDistanceFromLeft % lineSpace,
-            vertbefore  = this._xAxisDistanceFromTop  % lineSpace,
+            hozbefore   = yAxisDistanceFromLeft % lineSpace,
+            vertbefore  = xAxisDistanceFromTop  % lineSpace,
             
             // find index of grid line which is over axis and therefore will not be drawn
             
-            hozNoDraw   = Math.floor(this._xAxisDistanceFromTop  / lineSpace),
-            vertNoDraw  = Math.floor(this._yAxisDistanceFromLeft / lineSpace);
+            hozNoDraw   = Math.floor(xAxisDistanceFromTop  / lineSpace),
+            vertNoDraw  = Math.floor(yAxisDistanceFromLeft / lineSpace);
             
         
         for(let i = 0; i < hozlines; ++i)
@@ -239,10 +266,10 @@ Plot.prototype.draw = function draw() {
             
             let lineDist = vertbefore + lineSpace * i;
             
-            if( i !== hozNoDraw && lineDist > lineSpace / 2 && lineDist < this.height - lineSpace/2 )
+            if( i !== hozNoDraw && lineDist > lineSpace / 2 && lineDist < height - lineSpace/2 )
             {
-                ctx.moveTo(this.x             , this.y + lineDist);
-                ctx.lineTo(this.x + this.width, this.y + lineDist);
+                ctx.moveTo(left        , top + lineDist);
+                ctx.lineTo(left + width, top + lineDist);
             }
         }
         for(let i = 0; i < vertlines; ++i) 
@@ -251,23 +278,70 @@ Plot.prototype.draw = function draw() {
             
             let lineDist = hozbefore + lineSpace * i;
             
-            if( i !== vertNoDraw && lineDist > lineSpace / 2 && lineDist < this.width - lineSpace/2 )
+            if( i !== vertNoDraw && lineDist > lineSpace / 2 && lineDist < width - lineSpace/2 )
             {
-                ctx.moveTo(this.x + lineDist, this.y);
-                ctx.lineTo(this.x + lineDist, this.y + this.height);
+                ctx.moveTo(left + lineDist, top);
+                ctx.lineTo(left + lineDist, top + height);
             }
         }
         
         ctx.stroke();
     }
     
-    let smoother = new Smoother(ctx, 0);
+    // draw axis
+    
+    ctx.strokeStyle = this.graph.axisColor;
+    ctx.fillStyle   = color(this.graph.axisColor).lighten();
+    ctx.lineWidth = arrowSize / 8;
+    
+    // x - axis
+    if( this.graph.ymax >= 0 && this.graph.ymin <= 0 )
+    {
+        ctx.beginPath();
+        if( arrowSize * 1.2 < width - yAxisDistanceFromLeft )
+            shapes.arrow(ctx,
+                         left,         top + xAxisDistanceFromTop,
+                         left + width, top + xAxisDistanceFromTop,
+                         arrowSize, arrowAngle);
+        else
+        {
+            ctx.lineTo(left,         top + xAxisDistanceFromTop);
+            ctx.lineTo(left + width, top + xAxisDistanceFromTop);         
+        }
+        ctx.stroke();
+        ctx.fill();
+    }
+    // y - axis
+    if( this.graph.xmax >= 0 && this.graph.xmin <= 0 )
+    {
+        ctx.beginPath();
+        if( arrowSize * 1.2 < xAxisDistanceFromTop )
+            shapes.arrow(ctx,
+                         left + yAxisDistanceFromLeft, top + height,
+                         left + yAxisDistanceFromLeft, top,
+                         arrowSize, arrowAngle);
+        else
+        {
+            ctx.lineTo(left + yAxisDistanceFromLeft, top);
+            ctx.lineTo(left + yAxisDistanceFromLeft, top + height);
+        }
+        ctx.stroke();
+        ctx.fill();
+    }
+    
+    let smoother = new Smoother(ctx, 0),
+        colorIndex = 0;
     
     let counter = 0;
     for( let line of Line.getLines(this.graph) )
     {
+    
+        let markFunc = line.marker;
         
-        ctx.strokeStyle = hasOwn.call(line, 'color') ? line.color : this.graph.colors[counter];
+        if( _.isString(markFunc) )
+            markFunc = markers[markFunc] || false;
+        
+        ctx.strokeStyle = line.color === Line.defaultColorSymbol ? this.graph.colors[colorIndex++] : line.color;
         ctx.lineWidth = arrowSize / 4;
         
         ctx.beginPath();
@@ -275,21 +349,33 @@ Plot.prototype.draw = function draw() {
         smoother.smooth = line.smooth;
         
         
-        for(let i = 0, len = Math.min(line.x.length, line.y.length);
-            i < len;
-            ++i)
+        for(let coor of Iterator.combine({ x: line.x, y: line.y }))
         {
-            let clipedX = clip(1, this.width-1,  this._yAxisDistanceFromLeft + this._scaleX * line.x[i]),
-                clipedY = clip(1, this.height-1, this._xAxisDistanceFromTop  - this._scaleY * line.y[i]);
-                
-            smoother.smoothTo(this.x + clipedX, this.y + clipedY);
+            let relX = yAxisDistanceFromLeft + scale.x * coor.x,
+                relY = xAxisDistanceFromTop  - scale.y * coor.y;
+               
+            smoother.smoothTo(left + relX, top + relY);
         }
+        
         smoother.end();
         
+        if(markFunc)
+            for(let coor of Iterator.combine({ x: line.x, y: line.y }))
+            {
+                let relX = yAxisDistanceFromLeft + scale.x * coor.x,
+                    relY = xAxisDistanceFromTop  - scale.y * coor.y;
+                
+                markFunc(ctx, left + relX, top + relY, arrowSize/2);
+                
+            }
+            
         ctx.stroke();
+        
         
         ++counter;
     }
+    
+    ctx.restore();
     
     return this;    
 }
@@ -304,32 +390,73 @@ Plot.prototype.clear = function clear() {
     this.context.clearRect(this.x, this.y, this.width, this.height);
 }
 
+
+
+/**
+ * Get the scale used to transform plot coordinates to canvas coordinates.
+ *
+ *
+ * @returns {Object} Object with properties `x` and `y` set to the horizontal and vertical scales respectively.
+ */
+Plot.prototype.scale = function scale() {
+    const 
+        arrowSize       = Math.sqrt(this.width + this.height) / 4,
+        arrowAngle      = Math.PI/6,
+        arrowSideLegth  = arrowSize * Math.tan(arrowAngle/2),
+                
+        width           = this.width  - 2 * arrowSideLegth - 2,
+        height          = this.height - 2 * arrowSideLegth - 2,
+        
+        range           = this.graph.range();
+        
+    return { 
+        x: width  / range.x,
+        y: height / range.y
+    }; 
+}
+ 
 /**
  * Get position of mouse in coordinate system of graph
- * Function takes a mouse event object (for example the object passed to the onclick event handler)
+ * Function takes an object representing the position of the mouse relative to the page
  * and returns the position of that event using the coordinate system used to plot the graph.
  *
- * Note: this function uses pageX and pageY properties assuming they have already been normalized
- * by jquery or something similar
  *
- * Note: Graph#plot() must have been called atleast once to retrieve a valid position,
- * if Graph#plot() has not been called then this function returns `{ x:null, y:null }`
  *
- * @property {Jquery.Event} event Mouse event operator
+ * @param {Object} pagePosition Postion of mouse relative to page.
+ * @param {number} pagePosition.x Distance of mouse from left of page.
+ * @param {number} pagePosition.y Distance of mouse from top of page.
  *
  *
  * @returns {Object} Object with x,y properties set to the position of the mouse event
  */
- 
-
-Plot.prototype.position = function position(event) {
+Plot.prototype.position = function position(pagePosition) {
 
     // todo this may not need to be called every time
     let offset = $(this.context.canvas).offset();
     
+    const 
+        ctx             = this.context,
+        arrowSize       = Math.sqrt(this.width + this.height) / 4,
+        arrowAngle      = Math.PI/6,
+        arrowSideLegth  = arrowSize * Math.tan(arrowAngle/2),
+                
+    // slightly smaller drawing box so that the edges of arrows are always visible
+        left            = this.x      +     arrowSideLegth + 1,
+        top             = this.y      +     arrowSideLegth + 1,
+        width           = this.width  - 2 * arrowSideLegth - 2,
+        height          = this.height - 2 * arrowSideLegth - 2,
+        
+        range           = this.graph.range(),
+        
+        scale = { 
+            x: width  / range.x,
+            y: height / range.y
+        };
+    
+        
     return {
-        x: (   event.pageX - offset.left - this._yAxisDistanceFromLeft ) / this._scaleX,
-        y: ( - event.pageY + offset.top  + this._xAxisDistanceFromTop  ) / this._scaleY        
+        x: (   pagePosition.x - offset.left - left ) / scale.x + this.graph.xmin,
+        y: ( - pagePosition.y + offset.top  + top  ) / scale.y + this.graph.ymax   
     }
 
 }
