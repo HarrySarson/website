@@ -74,9 +74,13 @@ module.exports = function(gulp, name, config, sites, sync) {
             return stream;
         });
         
-        if(config.watch)
+        if( config.watch )
             imgPaths
-                .forEach((imgPath, i) => watch(imgPath, { ignoreInitial: true }, function() { compress[i](); sync.reload(); }));
+                .forEach((imgPath, i) => watch(imgPath, { ignoreInitial: true }, function() { 
+                    compress[i](); 
+                    if( sync != null )
+                        sync.reload(); 
+                }));
                                  
         
         return _.reduce(compress, (merged, c) => merged.add(c()), merge());

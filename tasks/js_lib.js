@@ -15,7 +15,7 @@ const
     uglify  = require('gulp-uglify')
     ;
     
-module.exports = function(gulp, name, config, sites, sync) {
+module.exports = function(gulp, name, config, sites) {
     
     if(config == null)
         throw Error('Adding js_lib task to gulp: no configuration provided');
@@ -27,11 +27,11 @@ module.exports = function(gulp, name, config, sites, sync) {
     
     gulp.task(name, function (cb) {
         
-        if(config.libary && config.libary.script)
+        if( config.libary && config.libary.script )
         {
             let opts = config.libary.script;
             
-            if(!_.isArray(opts.require))
+            if( !_.isArray(opts.require) )
             {
                 gutil.log('Error: ' + 
                           gutil.colors.red('Main config file does not define libary script require files')
@@ -42,7 +42,7 @@ module.exports = function(gulp, name, config, sites, sync) {
                 cb();
                 return;
             }    
-            if(opts.output == null)
+            if( opts.output == null )
             {
                 gutil.log('Error: ' + 
                           gutil.colors.red('Main config file does not define libary script output file')
@@ -57,7 +57,7 @@ module.exports = function(gulp, name, config, sites, sync) {
             let browserifyConfig    = config.libary.browserify || {},
                 outputFile          = config.libary;
                 
-            _.assign(browserifyConfig, { debug: config.watch });
+            _.assign(browserifyConfig, { debug: config.sourceMaps });
                
             let b = brwsify(browserifyConfig);
             

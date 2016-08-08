@@ -1,11 +1,17 @@
 {
     "src": "./src/",
     
-    "site": "",
+    "site": "convolution/",
     "dest": "./build/",
     
     "browser": "browser.json",
     
+    "debug": true,
+    
+    "watch": "default",
+    "sourceMaps": "default",
+    "runLocalHost": "default",
+    "minify": "default",
     
     "libary": {
         "script": {

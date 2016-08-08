@@ -5,6 +5,7 @@ const
     brwsify = require('browserify'),
     buffer  = require('vinyl-buffer'),
     fs      = require('fs'),
+    gulpif  = require('gulp-if'),
     gutil   = require('gulp-util'),
     merge   = require('merge-stream'),
     notify  = require('gulp-notify'),
@@ -70,13 +71,13 @@ module.exports = function(gulp, name, config, sites, sync) {
                             let browserifyConfig = siteConfig.browserify || {};
                             
                             // add watchify to configs
-                            _.assign(browserifyConfig, wtchify.args, { debug: config.watch });
+                            _.assign(browserifyConfig, wtchify.args, { debug: config.sourceMaps });
                             
                             
                             let b = brwsify(scriptPath, browserifyConfig);
                             
                             // watch files and re-bundle on change
-                            if(config.watch)
+                            if( config.watch )
                                 b = wtchify(b);
                             
                             // exclude libary files from bundle as they will be bundled seperately
@@ -105,22 +106,15 @@ module.exports = function(gulp, name, config, sites, sync) {
                                     })
                                     
                                     .pipe(source(scriptPath))
-                                    .pipe(buffer()); // convert stream to form that plugins can work with
+                                    .pipe(buffer()) // convert stream to form that plugins can work with
                                     
-                                if(config.watch)
-                                {
-                                    stream
-                                        .pipe(smaps.init({loadMaps: true }))
-                                            .pipe(rename(siteConfig.script.output))
-                                        .pipe(smaps.write()); // for some reason only inline source maps work
-                                }
-                                else
-                                {
-                                    stream
-                                        .pipe(uglify());
-                                }
+                                    .pipe(gulpif(config.sourceMaps, smaps.init({loadMaps: true })))
+                                        
+                                        .pipe(rename(siteConfig.script.output))
+                                        .pipe(gulpif(config.minify, uglify()))                                    
+                                    
+                                    .pipe(gulpif(config.sourceMaps, smaps.write())) // for some reason only inline source maps work
                                 
-                                stream
                                     .pipe(
                                         gulp.dest(
                                             path.dirname(
@@ -130,13 +124,13 @@ module.exports = function(gulp, name, config, sites, sync) {
                                         );
                                 return stream;
                             }
-                            if(config.watch)
+                            if( config.watch )
                             {
                                 b.on('update',  function(){
                                     bundle(true);
                                 });
                             }
-                            merged.add(bundle());                        
+                            merged.add(bundle(false));                        
                         }
                     });
                 }

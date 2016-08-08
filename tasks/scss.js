@@ -70,6 +70,8 @@ module.exports = function(gulp, name, config, sites, sync) {
             }
         };
         
+        let firstRun = true;
+        
         let parse = stylePaths.map(stylePath => function() {
             let error = false,
                 filePath = getFilePath(stylePath),
@@ -95,13 +97,13 @@ module.exports = function(gulp, name, config, sites, sync) {
                 .pipe(smaps.write())
                 .pipe(gulp.dest(config.dest));
                 
-            if(config.watch && sync)
+            if( config.watch && sync != null && !firstRun )
                 stream.pipe(sync.stream())
             
             return stream;
         });
         
-        if(config.watch)
+        if( config.watch )
             stylePaths
                 .forEach((stylePath, i) => watch(path.join(path.dirname(getFilePath(stylePath)), 
                                                            '**/*.{scss,sass,css}'
@@ -109,9 +111,13 @@ module.exports = function(gulp, name, config, sites, sync) {
                                                  { ignoreInitial: true }, 
                                                  parse[i]
                                                  ));
-                                 
+                                       
+        let stream = _.reduce(parse, (merged, p) => merged.add(p()), merge());
         
-        return _.reduce(parse, (merged, p) => merged.add(p()), merge());
+        stream.on('end', function() {
+            firstRun = false;
+        });
         
+        return stream;
     });
 };  

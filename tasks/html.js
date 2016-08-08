@@ -143,12 +143,15 @@ module.exports = function(gulp, name, config, sites, sync) {
             return stream;
         });
         
-        if(config.watch)
+        if( config.watch )
             siteDetails
                 .forEach((detail, i) => watch(detail.htmlPath,
-                                                 { ignoreInitial: true }, 
-                                                 function() { parse[i](); sync.reload(); }
-                                                 ));
+                                              { ignoreInitial: true }, 
+                                              function() { 
+                                                parse[i](); 
+                                                if( sync != null )
+                                                    sync.reload(); 
+                                              }));
                                  
         
         return _.reduce(parse, (merged, p) => merged.add(p()), merge());

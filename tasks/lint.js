@@ -12,9 +12,9 @@ const
     ;
 
 
-module.exports = function(gulp, name, config, sites, sync) {
+module.exports = function(gulp, name, config, sites) {
     
-    if(config == null)
+    if( config == null )
         throw Error('Adding lint task to gulp: no configuration provided');
     
     ['src', 'site', 'browser'].forEach(prop => {
@@ -57,7 +57,7 @@ module.exports = function(gulp, name, config, sites, sync) {
         let lint = jsPaths.map(jsPath => function() {
            
             if( firstRun )     
-                gutil.log('Linting all js files required from ' + gutil.colors.yellow(jsPath) + ' ...');   
+                gutil.log('Linting all js files matching ' + gutil.colors.yellow(jsPath) + ' ...');   
         
             let stream =
                 gulp.src(jsPath, {base: config.src})
@@ -97,9 +97,8 @@ module.exports = function(gulp, name, config, sites, sync) {
         });
         
         
-        if(config.watch)
+        if( config.watch )
         {
-            
             jsPaths
                 .forEach((jsPath, i) => watch(jsPath, { ignoreInitial: true }, lint[i]));
         }

@@ -27,6 +27,24 @@ if(config == null)
         throw Error('Ggulp: property ' + prop + ' not provided in configuration file');
 });
 
+_.defaults(config, {
+    debug: config.false    
+});
+
+_.forOwn({
+    watch: config.debug,
+    sourceMaps: config.debug,
+    runLocalHost: config.debug,
+    minify: !config.debug
+    
+}, function(val, key) {
+    if ( config[key] === 'default' || config[key] == null )
+        config[key] = val;
+});
+
+if( config.debug )
+    gutil.log(gutil.colors.yellow("Running in Debug mode"));
+
 const sites = (function() {
     
     let browserPaths = globby.sync(config.src + config.site + config.browser);
@@ -63,7 +81,7 @@ throw e;
     
     if(len > 0)
     {
-        gutil.log(gutil.colors.cyan('Site path set to ' + config.site));
+        gutil.log(gutil.colors.cyan('Site path set to ' + path.join(config.src, config.site)));
         gutil.log(gutil.colors.cyan('Found ' + len + ' valid browser configuration file(s):'));
         _.forOwn(obj, function(conf, p) {
             gutil.log('\t' + gutil.colors.green(path.join(p, config.browser)) );
@@ -86,7 +104,7 @@ else
     
     let sync = null;
     
-    if(config.watch)
+    if( config.runLocalHost )
     {
     
         sync = b_sync.create();

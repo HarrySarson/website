@@ -16,6 +16,7 @@
     "gulp-cached": "1.1.x",
     "gulp-clean-css": "2.0.x",
     "gulp-eslint": "3.0.x",
+    "gulp-if": "2.0.x",
     "gulp-imagemin": "3.0.x",
     "gulp-inject-string": "1.1.x",
     "gulp-notify": "2.2.x",
