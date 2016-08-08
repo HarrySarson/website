@@ -3,4 +3,4 @@ Collection of web-apps created by Harry Sarson, showcasing use of the [html5 ```
 
 The project is written in es6 javascript, scss and html5 and uses [gulp](https://github.com/gulpjs/gulp) to build the website, bundling, polyfilling and transpiling code.
 
-See the website hosted at harrysarson.magix.net.
+See the website hosted at http://harrysarson.magix.net
