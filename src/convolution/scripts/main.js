@@ -516,8 +516,6 @@ animate(function(controller) {
         }); 
     });
     
-       
-       
     controller.start();
         
     controller.on('animate', function(event){
