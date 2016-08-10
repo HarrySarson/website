@@ -102,59 +102,55 @@ module.exports = function(gulp, name, config, sites, sync) {
             return;
         }
         
+        let firstRun = true;
+        
         let parse = siteDetails.map(detail => function() {
             let error = false,
                 filePath = detail.htmlPath,
                 rel = path.normalize(filePath);
             
             
+            gutil.log('Parsing html ' + gutil.colors.green(rel) + '...');
+                    
             let stream =
                 gulp.src(filePath, {base: config.src})
                 .on('error', function(err) {
                     error = err;
                     
-                    gutil.log(gutil.colors.red('Parsing ') + gutil.colors.blue(rel) + gutil.colors.red(' Failure'));
+                    gutil.log(gutil.colors.red('Parsing html ') + gutil.colors.blue(rel) + gutil.colors.red(' Failure'));
                 })
-                .pipe(through.obj(function(chunk, enc, cb) {
-                   
-                    let rel = path.join(config.src, path.relative(config.src, chunk.path));
+                .on('end', function() {
                     
-                    gutil.log('Parsing ' + gutil.colors.green(rel) + '...');
-
-                    cb(null, chunk);
-                }))
+                    
+                    if(error === false)
+                        gutil.log('Parsing html ' + gutil.colors.green(rel) + ' Complete');
+                
+                    if( config.watch && sync != null && !firstRun )
+                        sync.reload();
+                })
                 
                 .pipe(inject.before('</head>', detail.style))
                 
                 .pipe(inject.before('</body>', detail.script))
                 
-                
-                .pipe(through.obj(function(chunk, enc, cb) {
-                    let rel = path.join(config.src, path.relative(config.src, chunk.path));
-                    
-                    if(error === false)
-                        gutil.log('Parsing ' + gutil.colors.green(rel) + ' Complete')
-                    
-                    cb(null, chunk);
-                }))
-                
                 .pipe(gulp.dest(config.dest));
+                
             
             return stream;
         });
         
         if( config.watch )
             siteDetails
-                .forEach((detail, i) => watch(detail.htmlPath,
-                                              { ignoreInitial: true }, 
-                                              function() { 
-                                                parse[i](); 
-                                                if( sync != null )
-                                                    sync.reload(); 
-                                              }));
+                .forEach((detail, i) => watch(detail.htmlPath, { ignoreInitial: true },  parse[i]));
                                  
         
-        return _.reduce(parse, (merged, p) => merged.add(p()), merge());
+        let stream = _.reduce(parse, (merged, p) => merged.add(p()), merge());
+        
+        stream.on('end', function() {
+            firstRun = false;
+        });
+        
+        return stream;
         
     });
 };        

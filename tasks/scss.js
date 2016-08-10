@@ -2,8 +2,8 @@
 const 
     _       = require('lodash'),
     notify  = require('gulp-notify'),
+    gulpif  = require('gulp-if'),
     gutil   = require('gulp-util'),
-    clean   = require('gulp-clean-css'),
     merge   = require('merge-stream'),
     path    = require('path'),
     prefix  = require('gulp-autoprefixer'),
@@ -15,14 +15,6 @@ const
 
 
 module.exports = function(gulp, name, config, sites, sync) {
-    
-    if(config == null)
-        throw Error('Adding scss task to gulp: no configuration provided');
-    
-    ['src', 'dest', 'browser'].forEach(prop => {
-        if(!_.has(config, prop))
-            throw Error('Adding scss task to gulp: property ' + prop + ' not provided in configuration');
-    });
     
     gulp.task(name, function (cb) {
         
@@ -57,26 +49,34 @@ module.exports = function(gulp, name, config, sites, sync) {
             cb();
             return;
         }
-        
+        // TODO babel has .babelrc what to do with sass, prehaps in browser.json
+        let sassConfig = {
+            
+            
+        };
         
         let getFilePath = stylePath => path.join(stylePath.site, stylePath.main);
         
-        let errorFunc = error => {
-            error = true;
-            gutil.log(gutil.colors.red('Parsing ') + gutil.colors.blue(rel) + gutil.colors.red(' Failure'));
-            return {
-                title: "Error parsing scss",
-                message: "<%= error.message %>"
-            }
-        };
+        
+        if( config.minify )
+            gutil.log(gutil.colors.orange('Warning:  ') + ' unable to minify css');
         
         let firstRun = true;
+        
         
         let parse = stylePaths.map(stylePath => function() {
             let error = false,
                 filePath = getFilePath(stylePath),
-                rel = path.normalize(filePath);
+                rel = path.normalize(filePath),
             
+                errorFunc = error => {
+                error = true;
+                gutil.log(gutil.colors.red('Parsing ') + gutil.colors.blue(rel) + gutil.colors.red(' Failure'));
+                return {
+                    title: "Error parsing scss",
+                    message: "<%= error.message %>"
+                }
+            };
             gutil.log('Parsing ' + gutil.colors.green(rel) + '...');
             
             let stream =
@@ -86,15 +86,14 @@ module.exports = function(gulp, name, config, sites, sync) {
                     if(error === false)
                         gutil.log('Parsing ' + gutil.colors.green(rel) + ' Complete');
                 })
-                .pipe(smaps.init())
-                    .pipe(sass().on('error', notify.onError(errorFunc)))
+                .pipe(gulpif(config.sourceMaps, smaps.init()))
+                    .pipe(sass(sassConfig).on('error', notify.onError(errorFunc)))
                     .pipe(prefix())
-                    .pipe(clean())
                     .pipe(rename({
                         basename: path.basename(stylePath.output, path.extname(stylePath.output)),
                         ext: path.extname(stylePath.output)
                     }))
-                .pipe(smaps.write())
+                .pipe(gulpif(config.sourceMaps, smaps.write()))
                 .pipe(gulp.dest(config.dest));
                 
             if( config.watch && sync != null && !firstRun )

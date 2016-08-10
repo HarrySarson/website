@@ -109,12 +109,7 @@ else
     
         sync = b_sync.create();
         
-        const startPath = config.site === '' ? null : glob2b(new glob.Glob(config.site));
         
-        sync.init({
-            server: config.dest,
-            startPath: startPath
-        })
     }
     tasks.forEach(function(taskName) {
 
@@ -128,6 +123,14 @@ else
     
     gulp.task('default', tasks, function(cb) {
         gutil.log(gutil.colors.cyan('First build complete'));
+        
+        const startPath = config.site === '' ? null : glob2b(new glob.Glob(config.site));
+        
+        sync.init({
+            server: config.dest,
+            startPath: startPath
+        })
+        
         cb();
     });
 }
