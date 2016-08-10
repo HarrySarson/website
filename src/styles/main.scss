@@ -1,11 +1,13 @@
 ﻿@import 'themes/colors';
 
-$table-width: 700px;
-$table-height: 500px;
+$table-width: 800px;
+$table-height: 550px;
 
 $rows: 2;
 $cols: 2;
 $padding: 15px;
+
+$margin: 50px;
 
 $cell-height: ($table-height - $padding)/$rows - $padding;
 $cell-width:  ($table-width - $padding)/$cols - $padding;
@@ -48,7 +50,7 @@ h1{
     box-sizing: border-box;
     width: $table-width;
     height: $table-height;
-    margin: 50px;
+    margin: $margin;
     background: $color-primary-0;
     padding: $padding;
 
@@ -58,13 +60,13 @@ h1{
 
 $first-scale: 0.8;
 
-@media screen and (max-width: $table-width*1.05){
+@media screen and (max-width: $margin*2 + $table-width*1.05){
     .link-container{
         transform: scale($first-scale);
     }
 }
 
-@media screen and (max-width: $first-scale*$table-width*1.05){
+@media screen and (max-width: $first-scale*($margin*2 + $table-width*1.05)){
     .link-container{
         transform: scale(0.5);
     }
@@ -89,7 +91,8 @@ $first-scale: 0.8;
 
     margin-right: $padding;
     background-color: $cell-background;
-
+    overflow: hidden;
+    
     border: 0.5em solid $cell-edge;
 
     float: left;
@@ -98,23 +101,39 @@ $first-scale: 0.8;
     &:last-child{
         margin-right: 0;
     }
+    
+    &:hover{
+        .picture{
+            color: $color-secondary-2-0;
+            background-position: 0 100%, 0 0;
+            transition: background-position 0.5s, color 0.3s 0.25s;
+        }
+        .picture {
+            animation: bump-up 0.5s 0.2s forwards;
+        }
+        h1 {
+            animation: title-up 0.7s forwards;
+        }
+    }
 }
 .picture{
     $grad: linear-gradient(to bottom,
-        transparent, transparent 50%,
+        transparent, transparent 45%,
         $cell-background 50%, $cell-background);
 
     width: 100%;
     height: 80%;
+    
 
     padding: 0.1% 0;
 
     background-clip: content-box;
-    background-size: 100% 201%, 100% 100%;
-    background-position: 0 0, 0 0;
+    background-size: 100% 223%, 100% 100%;
+    background-position: 0 0%, 0 0%;
 
     color: transparent;  
     
+    transform: translateY(0em);
     transition: background-position 0.3s 0.25s, color 0.5s;
     
     
@@ -124,16 +143,6 @@ $first-scale: 0.8;
         &.#{$file}{
             background-image: $grad, url(../images/#{$file}.png), url(../images/inprogress.png);
         }
-    }
-}
-.cell:hover{
-    .picture{
-        color: $color-secondary-2-0;
-        background-position: 0 100%, 0 0;
-        transition: background-position 0.5s, color 0.3s 0.25s;
-    }
-    .picture, h1{
-        animation: bump-up 0.3s 0.25s;
     }
 }
 .cell-link{
@@ -152,8 +161,29 @@ $first-scale: 0.8;
     0% {
         transform: translateY(0em);
     }
+    5% {
+        transform: translateY(-3px);
+    }
     75% {
-        transform: translateY(-5px);
+        transform: translateY(-7px);
+    }
+    100% {
+        transform: translateY(0em);
+    }
+}
+
+@keyframes title-up{
+    0% {
+        transform: translateY(0em);
+    }
+    40% {
+        transform: translateY(-200%);
+    }
+    41% {
+        transform: translateY(200%);
+    }
+    75% {
+        transform: translateY(-7px);
     }
     100% {
         transform: translateY(0em);
