@@ -1,7 +1,5 @@
 # npm-webpack-bolierplate
-:page_with_curl: Boilerplate for npm/node module. Write with webpack & ES6
-
-## Installation
+Boilerplate for npm/node module. Write with webpack & ES6
 
 ## How to get started
 1. Install node and npm.

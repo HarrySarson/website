@@ -1,8 +1,6 @@
-
 {
   "name": "npm-webpack-bolierplate",
-  "version": "0.5.0",
-  "description": "test",
+  "version": "0.5.2",
   "main": "src/index.js",
   "engines": {
     "node": ">=0.4.5"
@@ -49,5 +47,26 @@
     "karma-jasmine": "^1.0.2",
     "karma-webpack": "^1.8.0",
     "karma-htmlfile-reporter": "~0.3"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JeffGuKang/npm-webpack-boilerplate"
+  },
+  "keywords": [
+    "npm",
+    "webpack",
+    "node",
+    "module",
+    "starterkit",
+    "boilerplate"
+  ],
+  "author": "",
+  "bugs": {
+    "url": "https://github.com/JeffGuKang/npm-webpack-boilerplate"
+  },
+  "homepage": "https://github.com/JeffGuKang/npm-webpack-boilerplate#readme"
 }
