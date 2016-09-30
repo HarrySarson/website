@@ -1,9 +1,9 @@
-# npm-webpack-bolierplate
+# npm-webpack-boilerplate
 Boilerplate for npm/node module. Write with webpack & ES6
 
 ## How to get started
 1. Install node and npm.
-2. Clone this repo: git clone https://github.com/jeffgukang/npm-webpack-bolierplate.git YOUR-MODULE-NAME
+2. Clone this repo: git clone https://github.com/jeffgukang/npm-webpack-boilerplate.git YOUR-MODULE-NAME
 3. Change project name and basic setting through `npm init`.
 4. Install dependencies: `npm install`.
 5. Make your own module.

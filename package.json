@@ -1,6 +1,6 @@
 {
-  "name": "npm-webpack-bolierplate",
-  "version": "0.5.2",
+  "name": "npm-webpack-boilerplate",
+  "version": "0.5.3",
   "main": "src/index.js",
   "engines": {
     "node": ">=0.4.5"
