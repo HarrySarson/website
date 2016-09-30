@@ -1,7 +1,7 @@
 
 {
-  "name": "YOUR_PROJECTNAME",
-  "version": "0.1.0",
+  "name": "npm-webpack-bolierplate",
+  "version": "0.5.0",
   "description": "test",
   "main": "src/index.js",
   "engines": {
@@ -14,7 +14,7 @@
     "test": "karma start --reporters html"
   },
   "contributors": {
-    "author": "Jeff Gu Kang",
+    "author": "Jeff Gu Kang <jeffgukang@gmail.com>",
     "author": "Muhun Kim <muhun.kim@gmail.com> (http://blog.muhun.kim)",
     "author": "TylorShin",
     "author": "ohdoking",
