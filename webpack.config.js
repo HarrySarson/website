@@ -16,22 +16,21 @@ module.exports = {
     filename: 'bundle.js',
   },
   resolve: {
-    modulesDirectories: ['node_modules'],
-    extensions: ['', '.js'],
+    modules: ['node_modules'],
   },
   module: {
-    loaders: [
+    rules: [
       {
         test: [/\.js?$/],
         exclude: /node_modules/,
-        loader: 'babel',
+        loader: 'babel-loader',
         query: {
           presets: ['es2015'],
         },
       },
       {
         test: /\.html$/,
-        loader: 'raw',
+        loader: 'raw-loader',
       },
     ],
   },
