@@ -8,7 +8,6 @@ module.exports = {
   devtool: 'sourcemap',
   entry: [
     'babel-polyfill',
-    'webpack/hot/dev-server',
     './src',
   ],
   output: {
